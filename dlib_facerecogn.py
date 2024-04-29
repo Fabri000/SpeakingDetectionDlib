@@ -25,14 +25,14 @@ def mouth_aspect_ratio(mouth):
 
 
 
-def blur_image(img,k=50):
+def blur_image(img):
     ris = img.copy()
     hh, ww = img.shape[:2]
     hh2 = hh // 2
     ww2 = ww // 2
 
     # define circles
-    axes = [ww2//2,hh2-k]
+    axes = [ww2//2,hh2-K]
     yc = hh2
     xc = ww2
 
@@ -52,9 +52,10 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
 #Parameterss
 MOUTH_AR_THRESH=0.65
-MINIMUM_FACE_AREA = 5000
-MAXIMUM_FACE_AREA = 14000
-EPS=0.25
+K = 50 # scale factor for the minor axis of the mask
+MINIMUM_FACE_AREA = 7000 # more distant the less
+MAXIMUM_FACE_AREA = 29000 # closer more
+EPS=0.30
 
 predictor_path = 'shape_predictor_68_face_landmarks.dat'
 
@@ -78,8 +79,8 @@ while(cap.isOpened()):
         shape = face_utils.shape_to_np(shape)
         
         
-        MAX_DISTANCE = frame.shape[0]//4
-      
+        MAX_DISTANCE = frame.shape[0]//2 - K
+        print(f'face detected {dets}')
         area =  d.area()
         print(f'face area: {area}')
 
