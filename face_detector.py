@@ -1,9 +1,5 @@
-import datetime
-import sys
-import os
 import time
 import dlib
-import glob
 from skimage import io
 from scipy.spatial import distance as dist
 from imutils import face_utils
@@ -131,7 +127,7 @@ class FaceDetector(Thread):
             
             # To exit and stop execution
             if cv2.waitKey(1) & 0xFF == ord('q'):
-                print("q pressed")
+                self.queue.put('End')
                 break
 
 
