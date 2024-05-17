@@ -22,20 +22,21 @@ class AudioRegistrator(Thread):
         
 
     def run(self):
-                        
-        while self.proceed:
         
+        start_recording = False
+        
+        while self.proceed:
+            
             frames = []  # List of audio portion
             
             # signal for the mouth open
             signal = self.queue.get()
-            if(signal == 'Open'):
-                
+            if(signal == 'Face detected'):
                 stream = self.audio.open(format=self.format,
-                        channels=self.channels,
-                        rate=self.frequency,
-                        input=True,
-                        frames_per_buffer=self.chunk)
+                    channels=self.channels,
+                    rate=self.frequency,
+                    input=True,
+                    frames_per_buffer=self.chunk)
                 
                 while True:
                     # Register audio frame
@@ -47,8 +48,33 @@ class AudioRegistrator(Thread):
                     # Stop recording signal with the mouth closed detection
                     try:
                         signal = self.queue.get(False)
-                        if signal == 'Closed':
+
+                        if (signal == 'Open') and  not(start_recording):
+                            start_recording = True
+                            frames = frames[len(frames)-7:]
+
+                        elif signal == 'Closed':
+                            start_recording = False
+
+                            stream.stop_stream()
+                            stream.close()
+
+                            # Create wav file with output
+                            cur_time = time.time()
+                            file_audio = wave.open(f"registrazioni/registrazione-{cur_time}.wav", "wb")
+
+                            # Wav file settings
+                            file_audio.setnchannels(self.channels)
+                            file_audio.setsampwidth(self.audio.get_sample_size(self.format))
+                            file_audio.setframerate(self.frequency)
+
+                            # Write on file the output
+                            file_audio.writeframes(b''.join(frames))
+                            
+                            file_audio.close()
+
                             break
+
                         elif signal == 'End':
                             self.proceed = False
                             break
@@ -56,19 +82,4 @@ class AudioRegistrator(Thread):
                     except _queue.Empty:
                         print()
                     
-                stream.stop_stream()
-                stream.close()
-
-                # Create wav file with output
-                cur_time = time.time()
-                file_audio = wave.open(f"registrazione-{cur_time}.wav", "wb")
-
-                # Wav file settings
-                file_audio.setnchannels(self.channels)
-                file_audio.setsampwidth(self.audio.get_sample_size(self.format))
-                file_audio.setframerate(self.frequency)
-
-                # Write on file the output
-                file_audio.writeframes(b''.join(frames))
                 
-                file_audio.close()

@@ -9,3 +9,6 @@ ar = AudioRegistrator(queue)
 
 fd.start()
 ar.start()
+
+fd.join()
+ar.join()

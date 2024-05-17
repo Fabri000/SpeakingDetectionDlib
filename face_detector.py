@@ -67,11 +67,12 @@ class FaceDetector(Thread):
         cap = cv2.VideoCapture(0)
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
+        contaNoFace = 0
         contaClosed = 0
         while(cap.isOpened()):
 
             # Timing 
-            time.sleep(0.1)
+            #time.sleep(0.1)
 
             # Reading and blurring a frame
             ret, frame = cap.read()
@@ -92,7 +93,9 @@ class FaceDetector(Thread):
                 
                 # Ignore faces that are too close and too far away
                 if (area >= MINIMUM_FACE_AREA) & (area <= MAXIMUM_FACE_AREA):
-
+                    contaNoFace = 0
+                    self.queue.put('Face detected')
+                    
                     # Getting landmarks of mouth and of face borders
                     mouth = np.array([shape[60],shape[64],shape[62],shape[66]])
                     face_borders = [shape[2],shape[14]]
@@ -117,11 +120,16 @@ class FaceDetector(Thread):
                         contaClosed = 0
                     elif time0 !=0:
                         contaClosed +=1
-                        if contaClosed>=10: # 10 is a value that can be changed 
+                        if contaClosed>=15: # 10 is a value that can be changed 
                             self.queue.put('Closed')
+                            time.sleep(3)
 
                 else:
+                    contaNoFace+=1
+                    if contaNoFace >=10:
+                        self.queue.put('End')
                     print('Sei troppo vicino, allontanati!')
+            
             # Shows the image on the screenss
             cv2.imshow('frame', frame)
             
