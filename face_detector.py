@@ -120,14 +120,17 @@ class FaceDetector(Thread):
                         contaClosed = 0
                     elif time0 !=0:
                         contaClosed +=1
-                        if contaClosed>=15: # 10 is a value that can be changed 
+                        if contaClosed>=20: # 20 is a value that can be changed 
                             self.queue.put('Closed')
                             time.sleep(3)
 
                 else:
                     contaNoFace+=1
-                    if contaNoFace >=10:
+                    if contaNoFace >=10: # 10 is a value that can be changed 
                         self.queue.put('End')
+                        cap.release()
+                        break
+
                     print('Sei troppo vicino, allontanati!')
             
             # Shows the image on the screenss
@@ -136,9 +139,10 @@ class FaceDetector(Thread):
             # To exit and stop execution
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.queue.put('End')
+                cap.release()
                 break
 
 
-        cap.release()
+
 
         cv2.destroyAllWindows()

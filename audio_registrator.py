@@ -18,14 +18,14 @@ class AudioRegistrator(Thread):
         self.queue = queue
         self.audio = pyaudio.PyAudio()
 
-        self.proceed = True
         
 
     def run(self):
         
         start_recording = False
+        proceed = True
         
-        while self.proceed:
+        while proceed:
             
             frames = []  # List of audio portion
             
@@ -53,7 +53,8 @@ class AudioRegistrator(Thread):
                             start_recording = True
                             frames = frames[len(frames)-7:]
 
-                        elif signal == 'Closed':
+                        elif signal == 'Closed' and start_recording:
+                            
                             start_recording = False
 
                             stream.stop_stream()
@@ -76,7 +77,7 @@ class AudioRegistrator(Thread):
                             break
 
                         elif signal == 'End':
-                            self.proceed = False
+                            proceed = False
                             break
                         
                     except _queue.Empty:
